@@ -1,0 +1,45 @@
+
+/// add this all dependency in your project
+  dio: ^4.0.6
+  path_provider: ^2.0.11
+  gallery_saver: ^2.3.2
+  image_gallery_saver: ^1.7.1
+  fluttertoast: ^8.0.9
+ 
+ 
+ Future<void> _downloadFile(String url) async {
+
+    try {
+      Loader().showLoader(context);
+      var dir = await getExternalStorageDirectory();
+      Platform.isIOS
+          ? await GallerySaver.saveImage(url)
+          .then((success) {
+        Fluttertoast.showToast(
+            backgroundColor: AppColors().whiteFC,
+            msg: "Download Completed",
+            gravity: ToastGravity.TOP,
+            toastLength: Toast.LENGTH_SHORT);
+        Loader().hideLoader(context);
+      })
+          : await downloadAndroid(url);
+    } catch (e) {
+      AlertBox().show(context, "Image Download Exception", e.toString());
+    }
+
+  }
+
+  downloadAndroid(String path) async {
+    var response = await Dio()
+        .get(path, options: Options(responseType: ResponseType.bytes));
+    final result =
+    await ImageGallerySaver.saveImage(Uint8List.fromList(response.data));
+    Fluttertoast.showToast(
+        msg: "Download Completed",
+        backgroundColor:  AppColors().whiteFC,
+        textColor: Colors.white,
+        gravity: ToastGravity.BOTTOM,
+        toastLength: Toast.LENGTH_SHORT);
+    // ignore: use_build_context_synchronously
+    Loader().hideLoader(context);
+  }
